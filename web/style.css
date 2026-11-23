@@ -1,0 +1,132 @@
+/* Project-specific pieces on top of book.css — same monochrome language. */
+
+main code{font-family:var(--mono);font-size:.92em;background:var(--soft);padding:1px 6px;border-radius:6px}
+footer a{color:inherit}
+.mt{margin-top:14px}
+
+/* engine status pill */
+.status{display:inline-flex;align-items:center;gap:8px;margin-top:16px;font-family:var(--mono);font-size:12px;color:var(--muted);
+  border:1px solid var(--line);border-radius:999px;padding:5px 12px;background:#fff}
+.status i{width:8px;height:8px;border-radius:50%;background:#c9ccd0}
+.status.ok i{background:var(--ink);animation:beat 2.4s ease-in-out infinite}
+.status.bad{color:var(--ink);border-color:var(--ink)}
+.status.bad i{background:transparent;border:1.5px solid var(--ink)}
+@keyframes beat{0%,100%{box-shadow:0 0 0 0 rgba(11,11,12,.35)}50%{box-shadow:0 0 0 5px rgba(11,11,12,0)}}
+.offline{margin:16px 0 0;border:1.5px solid var(--ink);border-radius:16px;padding:14px 16px;font-size:14px}
+.offline pre{margin:10px 0 0;font-size:13px}
+
+/* inline segmented control inside a field */
+.field .seg{height:39px;align-items:center}
+.field .seg button{padding:5px 11px}
+
+.verdict{margin:14px 2px 0;font-weight:500}
+.verdict b{font-family:var(--display);font-weight:700}
+
+/* ---------- grid map ---------- */
+.mission-map{display:grid;grid-template-columns:minmax(0,1fr) 190px;gap:20px;align-items:start;margin-top:18px}
+.mission-side{display:grid;gap:14px;align-content:start}
+.mission-side .legend-mini{margin-top:0;display:grid;gap:6px}
+.grid.big{max-width:430px}
+.cell.field{background:repeating-linear-gradient(-45deg,#eceef0 0 3px,#f7f7f8 3px 7px);color:#9a9ea4;font-size:14px}
+.cell.field.visited{background:repeating-linear-gradient(-45deg,#cfd2d6 0 3px,#dfe1e4 3px 7px);color:var(--ink)}
+.cell.preview{background:#fff;box-shadow:inset 0 0 0 2px var(--ink);color:var(--ink);animation:pathpop .5s var(--spring) both}
+.cell.preview::after{content:"";position:absolute;inset:5px;border:1.5px dashed var(--ink);border-radius:6px}
+.cell.drone{z-index:2}
+.cell.drone::before{content:"";position:absolute;inset:22%;border-radius:50%;background:#fff;box-shadow:0 0 0 2px var(--ink),0 0 18px 2px rgba(255,255,255,.9);
+  animation:hover 1s ease-in-out infinite alternate}
+@keyframes hover{to{transform:translateY(-2px) scale(1.08)}}
+.cell.start,.cell.goal{cursor:default}
+.cell:not(.wall):not(.start):not(.goal){cursor:default}
+
+/* legend keys */
+.legend-mini i.k-start,.legend-mini i.k-goal,.legend-mini i.k-path,.legend-mini i.k-current,.legend-mini i.k-filled,.legend-mini i.k-line{background:var(--ink)}
+.legend-mini i.k-wall{background:repeating-linear-gradient(45deg,#2a2b2e 0 2px,#0b0b0c 2px 4px)}
+.legend-mini i.k-field{background:repeating-linear-gradient(-45deg,#d9dbde 0 2px,#f4f4f5 2px 4px);box-shadow:inset 0 0 0 1px #d9dbde}
+.legend-mini i.k-visited{background:#d9dbde}
+.legend-mini i.k-frontier{background:#fff;box-shadow:inset 0 0 0 2px var(--ink)}
+.legend-mini i.k-empty{border-radius:50%;border:1.5px solid #c9ccd0}
+.legend-mini i.k-filled{border-radius:50%}
+.legend-mini i.k-ring{border-radius:50%;box-shadow:0 0 0 2px #fff,0 0 0 3.5px var(--ink);transform:scale(.8)}
+.legend-mini i.k-line{height:3px;width:18px;border-radius:2px;vertical-align:3px}
+.legend-mini i.k-dash{height:0;width:18px;border-top:2px dashed var(--ink);border-radius:0;vertical-align:3px}
+.legend-mini i.k-thr{height:0;width:18px;border-top:1.5px dotted var(--muted);border-radius:0;vertical-align:3px}
+
+/* ---------- bayes ---------- */
+.bayes-split{display:grid;grid-template-columns:minmax(0,330px) minmax(0,1fr);gap:26px;align-items:center}
+.bars{grid-template-columns:repeat(var(--n,3),1fr)}
+.bars.two{--n:2;max-width:260px}
+.barcol small{min-height:2.6em}
+.bar.light{background:#d9dbde}
+
+/* ---------- mdp ---------- */
+.qtable{display:grid;grid-template-columns:70px repeat(2,minmax(0,1fr));gap:8px;max-width:440px;margin-top:16px}
+.qtable .hd{font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:grid;place-items:center}
+.qtable .hd.l{place-items:center start}
+.qtable .mcell{aspect-ratio:auto;padding:14px 10px}
+.qtable .mcell .val{font-size:16px}
+.qtable .mcell .arr{font-size:13px;font-family:var(--mono)}
+.qtable .vcol{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:center;grid-column:2 / 4;margin-top:-2px}
+.mdp-split{display:grid;grid-template-columns:minmax(0,260px) minmax(0,1fr);gap:26px;margin-top:20px;align-items:end}
+.vz-sub{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-bottom:6px}
+
+/* ---------- A* ---------- */
+.astar-split{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:22px;align-items:start}
+.astar-info .stats{margin-top:0}
+.frontier{margin-top:14px;font-family:var(--mono);font-size:12.5px;color:var(--muted);line-height:1.9}
+.frontier b{font-weight:500;color:var(--ink)}
+.frontier .chip{display:inline-block;border:1.5px solid var(--ink);color:var(--ink);border-radius:999px;padding:0 8px;margin:0 4px 4px 0;font-size:11.5px}
+
+/* ---------- svg charts ---------- */
+.vsvg .ax{stroke:#cfd2d6;stroke-width:1}
+.vsvg .tick{font-family:var(--mono);font-size:10.5px;fill:var(--muted)}
+.vsvg .ln{fill:none;stroke:var(--ink);stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+.vsvg .ln.dash{stroke-dasharray:6 5}
+.vsvg .ln.thin{stroke-width:1.4;stroke-dasharray:2 4;stroke:var(--muted)}
+.vsvg .zone{fill:#f0f1f2}
+.vsvg .cur{fill:var(--ink);stroke:#fff;stroke-width:3}
+.vsvg .cur-ring{fill:none;stroke:var(--ink);stroke-width:1.5;animation:ringpulse 1.8s ease-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes ringpulse{from{transform:scale(1);opacity:.9}to{transform:scale(2.6);opacity:0}}
+.vsvg .lab{font-family:var(--mono);font-size:11px;fill:var(--ink)}
+.vsvg .lab.m{fill:var(--muted)}
+.vsvg .box rect{fill:#fff;stroke:var(--ink);stroke-width:1.5;rx:14}
+.vsvg .box.dark rect{fill:var(--ink)}
+.vsvg .box text{font-family:var(--mono);font-size:11.5px;fill:var(--ink);text-anchor:middle}
+.vsvg .box text.t{font-family:var(--display);font-size:13px;font-weight:700}
+.vsvg .box.dark text{fill:#fff}
+.vsvg .wire{fill:none;stroke:var(--ink);stroke-width:1.5;stroke-dasharray:5 5;animation:flow 1.2s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-20}}
+.vsvg .wire-lbl{font-family:var(--mono);font-size:11px;fill:var(--muted);text-anchor:middle}
+
+/* ---------- tables & logs ---------- */
+.tablewrap{overflow-x:auto;margin-top:14px}
+table.res{width:100%;border-collapse:collapse;font-size:14px}
+table.res th{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:500;text-align:left;padding:8px 10px;border-bottom:1.5px solid var(--ink)}
+table.res td{padding:9px 10px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+table.res td.mono{font-family:var(--mono)}
+table.res tr{transition:background .3s var(--ease)}
+table.res tr:hover{background:var(--soft)}
+table.res tr.now td:first-child{font-weight:700}
+table.res .tagw{font-family:var(--mono);font-size:12px;border-radius:999px;padding:2px 9px;border:1.5px solid var(--ink)}
+table.res .tagw.fly{background:var(--ink);color:#fff}
+pre.log{font-size:12.5px;line-height:1.55;max-height:300px;white-space:pre}
+pre.log .ok{color:#fff;font-weight:500}
+pre.log .dim{color:#8d9197}
+
+@media (max-width:860px){
+  .mission-map,.bayes-split,.mdp-split,.astar-split{grid-template-columns:minmax(0,1fr)}
+  .mission-side .legend-mini{display:flex}
+}
+
+/* fixes: long cover title, scramble overlay, 4 outputs in one row */
+.cover .title{font-size:clamp(40px,7.4vw,100px);white-space:nowrap}
+@media (max-width:700px){.cover .title{white-space:normal}}
+main h2 .h-scr{white-space:nowrap;overflow:hidden}
+.viz .outs .out{flex-basis:104px}
+.viz .outs .out small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qtable .mcell{padding:28px 10px 12px}
+#bayes-bars{height:230px}
+.seg button{white-space:nowrap}
+@media (max-width:700px){
+  #presets{flex-wrap:wrap;border-radius:20px}
+  #presets button{flex:1 1 40%}
+}

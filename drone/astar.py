@@ -60,6 +60,7 @@ class AStarResult:
     expanded: list                # order in which nodes were expanded
     exposed_cells_on_path: int
     steps: list = field(default_factory=list)
+    trace: list = field(default_factory=list)   # one entry per expansion: cell, g, h, f, frontier
 
 
 def step_cost(grid: GridMap, cell: Cell, p_wind: float, wind_penalty: float) -> float:
@@ -77,6 +78,7 @@ def astar(grid: GridMap, p_wind: float = 0.0, wind_penalty: float = 25.0,
     came_from = {}
     closed = set()
     expanded = []
+    trace = []
     steps = [f"Start {start}, goal {goal}, h = Manhattan, "
              f"exposed-cell cost = 1 + {wind_penalty}*{p_wind:.3f} = "
              f"{1 + wind_penalty * p_wind:.3f}"]
@@ -87,6 +89,9 @@ def astar(grid: GridMap, p_wind: float = 0.0, wind_penalty: float = 25.0,
             continue
         closed.add(cur)
         expanded.append(cur)
+        entry = {"cell": cur, "g": g_cur, "h": manhattan(cur, goal), "f": f,
+                 "frontier": sorted({c for *_, c in open_heap if c not in closed})}
+        trace.append(entry)
         if len(expanded) <= max_trace:
             steps.append(f"  expand {cur}: g={g_cur:.2f} h={manhattan(cur, goal)} f={f:.2f}")
 
@@ -99,7 +104,7 @@ def astar(grid: GridMap, p_wind: float = 0.0, wind_penalty: float = 25.0,
             steps.append(f"  ... goal reached after expanding {len(expanded)} nodes")
             steps.append(f"Route ({len(path) - 1} moves, cost {g_cur:.2f}, "
                          f"{n_exp} exposed cells): {' -> '.join(map(str, path))}")
-            return AStarResult(path, g_cur, expanded, n_exp, steps)
+            return AStarResult(path, g_cur, expanded, n_exp, steps, trace)
 
         for nb in grid.neighbors(cur):
             new_g = g_cur + step_cost(grid, nb, p_wind, wind_penalty)
@@ -108,9 +113,10 @@ def astar(grid: GridMap, p_wind: float = 0.0, wind_penalty: float = 25.0,
                 came_from[nb] = cur
                 counter += 1
                 heapq.heappush(open_heap, (new_g + manhattan(nb, goal), new_g, counter, nb))
+        entry["frontier"] = sorted({c for *_, c in open_heap if c not in closed})
 
     steps.append("No route exists")
-    return AStarResult(None, float("inf"), expanded, 0, steps)
+    return AStarResult(None, float("inf"), expanded, 0, steps, trace)
 
 
 def render_ascii(grid: GridMap, path=None) -> str:

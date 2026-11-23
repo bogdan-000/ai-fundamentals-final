@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Drone Parcel Route · AI Fundamentals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Archivo:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%228%22 fill=%22%230b0b0c%22/%3E%3Cpath d=%22M9 16h14M17 10l6 6-6 6%22 stroke=%22white%22 stroke-width=%223%22 fill=%22none%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
+<link rel="stylesheet" href="book.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="cur-ring" id="curRing" aria-hidden="true"></div>
+<div class="cur-dot" id="curDot" aria-hidden="true"></div>
+<div class="wipe" id="wipe" aria-hidden="true"><span><i style="--i:0">T</i><i style="--i:1">a</i><i style="--i:2">k</i><i style="--i:3">e</i><i style="--i:4">&nbsp;</i><i style="--i:5">o</i><i style="--i:6">f</i><i style="--i:7">f</i></span></div>
+<canvas id="field" aria-hidden="true"></canvas>
+<div class="progress" id="progress" aria-hidden="true"></div>
+
+<!-- ================= COVER ================= -->
+<div class="cover" id="cover">
+  <div class="cover-inner" id="coverInner">
+    <div class="kicker">AI Fundamentals · Final Project · Topic 13</div>
+    <h1 class="title"><span class="w"><span>Drone</span></span> <span class="w"><span>Parcel</span></span> <span class="w"><span>Route</span></span></h1>
+    <p class="sub">One noisy wind reading. Three AI algorithms. One decision: is it windy, should the drone fly, and which way.</p>
+    <button class="open" id="openBtn" type="button"><span>Launch mission</span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </button>
+    <div class="chips">
+      <span style="--i:0">Bayes</span><span style="--i:1">MDP</span><span style="--i:2">Value iteration</span><span style="--i:3">A* search</span>
+      <span style="--i:4">Manhattan</span><span style="--i:5">QMDP</span><span style="--i:6">Python</span><span style="--i:7">27 tests</span>
+    </div>
+  </div>
+  <div class="marquee" aria-hidden="true"><div>
+    <span><b>P(H|E) = P(E|H)·P(H) / P(E)</b> Bayes</span><span><b>P(E) = Σ P(E|h)·P(h)</b> evidence</span><span><b>Q = R + γ Σ P·V</b> Bellman</span><span><b>V = max Q</b> value iteration</span><span><b>Q_b = b·Q(windy) + (1-b)·Q(calm)</b> QMDP</span><span><b>f = g + h</b> A*</span><span><b>h = |Δr| + |Δc|</b> Manhattan</span><span><b>cost = 1 + λ·P(wind)</b> open field</span><span><b>fly if b &lt; 12.9%</b> threshold</span>
+    <span><b>P(H|E) = P(E|H)·P(H) / P(E)</b> Bayes</span><span><b>P(E) = Σ P(E|h)·P(h)</b> evidence</span><span><b>Q = R + γ Σ P·V</b> Bellman</span><span><b>V = max Q</b> value iteration</span><span><b>Q_b = b·Q(windy) + (1-b)·Q(calm)</b> QMDP</span><span><b>f = g + h</b> A*</span><span><b>h = |Δr| + |Δc|</b> Manhattan</span><span><b>cost = 1 + λ·P(wind)</b> open field</span><span><b>fly if b &lt; 12.9%</b> threshold</span>
+  </div></div>
+</div>
+
+<!-- ================= BOOK ================= -->
+<div class="book" id="book" hidden>
+<div class="wrap">
+<nav aria-label="Chapters" id="nav">
+  <div class="pill" id="pill"></div>
+  <a href="#problem"><span>01</span>Problem</a>
+  <a href="#mission"><span>02</span>Mission control</a>
+  <a href="#bayes"><span>03</span>Bayes</a>
+  <a href="#mdp"><span>04</span>MDP</a>
+  <a href="#astar"><span>05</span>A* search</a>
+  <a href="#pipeline"><span>06</span>How it connects</a>
+  <a href="#sensitivity"><span>07</span>Sensitivity</a>
+  <a href="#tests"><span>08</span>Testing</a>
+  <a href="#limits"><span>09</span>Limits</a>
+</nav>
+
+<main>
+<header class="bookhead">
+  <h1>Drone Parcel Route</h1>
+  <p>A delivery drone, one wind sensor, three algorithms from the course. Every number on this page is computed live by the Python code in <code>drone/</code>.</p>
+  <div class="status" id="status"><i></i><span>connecting to the Python engine…</span></div>
+</header>
+
+<!-- 01 PROBLEM -->
+<section id="problem">
+  <div class="tag">01 · The problem</div>
+  <h2>Fly, wait, or fly around?</h2>
+  <p class="gist">sensors lie a little, wind breaks drones a lot</p>
+  <div class="rows">
+    <div class="row"><b>situation</b><span>a drone must carry one parcel from the depot to a customer on a 6×6 map</span></div>
+    <div class="row"><b>risk</b><span>strong wind over the open field can push the drone off course or crash it</span></div>
+    <div class="row"><b>information</b><span>one wind sensor reading · it misses 20% of storms and false-alarms 20% of calm days</span></div>
+    <div class="row"><b>question 1</b><span>how likely is strong wind right now → <b>Bayesian inference</b></span></div>
+    <div class="row"><b>question 2</b><span>fly now or wait for better weather → <b>MDP</b></span></div>
+    <div class="row"><b>question 3</b><span>which route is cheapest given the risk → <b>A* search</b></span></div>
+    <div class="row"><b>assumptions</b><span>all probabilities, rewards and the map are toy values, clearly labelled · no trained model</span></div>
+  </div>
+</section>
+
+<!-- 02 MISSION -->
+<section id="mission">
+  <div class="tag">02 · Live demo</div>
+  <h2>Mission control</h2>
+  <p class="gist">set the scenario, the three algorithms answer together</p>
+
+  <div class="viz">
+    <div class="vz-head"><span>Scenario</span><em id="scenario-name">C · Storm warning</em></div>
+    <div class="seg" id="presets">
+      <button data-preset="A">A · Calm</button>
+      <button data-preset="B">B · Uncertain</button>
+      <button data-preset="C" class="on">C · Storm</button>
+      <button data-preset="custom">Custom</button>
+    </div>
+    <div class="fields mt">
+      <div class="field"><label for="m-prior">prior P(strong)</label><input id="m-prior" data-p="prior" type="number" min="0" max="1" step="0.05"></div>
+      <div class="field"><label for="m-hit">P(alert | strong)</label><input id="m-hit" data-p="hit" type="number" min="0" max="1" step="0.05"></div>
+      <div class="field"><label for="m-fa">P(alert | calm)</label><input id="m-fa" data-p="fa" type="number" min="0" max="1" step="0.05"></div>
+      <div class="field"><label for="m-pen">wind penalty λ</label><input id="m-pen" data-p="penalty" type="number" min="0" max="100" step="1"></div>
+      <div class="field"><label>sensor reading</label>
+        <div class="seg" data-seg="alert"><button data-v="1">⚠ alert</button><button data-v="0">✓ quiet</button></div>
+      </div>
+    </div>
+
+    <div class="outs">
+      <div class="out"><small>P(strong | reading)</small><b data-out="posterior">–</b></div>
+      <div class="out"><small>MDP decision</small><b data-out="action">–</b></div>
+      <div class="out"><small>A* route</small><b data-out="moves">–</b></div>
+      <div class="out"><small>route cost</small><b data-out="cost">–</b></div>
+    </div>
+    <p class="verdict" id="verdict"></p>
+
+    <div class="mission-map">
+      <div class="grid big" id="mission-grid" aria-label="Mission map"></div>
+      <div class="mission-side">
+        <div class="legend-mini">
+          <span><i class="k-start"></i>S depot</span><span><i class="k-goal"></i>G customer</span>
+          <span><i class="k-wall"></i>building</span><span><i class="k-field"></i>open field</span>
+          <span><i class="k-visited"></i>explored</span><span><i class="k-path"></i>route</span>
+        </div>
+        <button class="vbtn solid" id="fly-btn" type="button">▶ Run mission</button>
+        <p class="vnote" id="mission-note">The map replays A* exploring, then draws the route. A dashed route means the drone is waiting and the route is only a preview.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 03 BAYES -->
+<section id="bayes">
+  <div class="tag">03 · Probabilistic reasoning</div>
+  <h2>Bayesian inference</h2>
+  <p class="gist">prior belief + one noisy reading → posterior belief</p>
+  <div class="rows">
+    <div class="row"><b>hidden state</b><span>W ∈ {strong, calm} · we never see it directly</span></div>
+    <div class="row"><b>evidence</b><span>E ∈ {alert, quiet} · one sensor reading</span></div>
+    <div class="row"><b>prior</b><span>P(strong) · what we believed before the reading</span></div>
+    <div class="row"><b>likelihood</b><span>P(e | strong), P(e | calm) · how the sensor behaves</span></div>
+    <div class="row"><b>evidence P(e)</b><span>P(e|strong)P(strong) + P(e|calm)P(calm) · normalizer</span></div>
+    <div class="row"><b>posterior</b><span>P(strong | e) = P(e | strong)·P(strong) / P(e)</span></div>
+  </div>
+  <pre>P(strong | e) = P(e | strong) · P(strong) / P(e)</pre>
+
+  <div class="viz">
+    <div class="vz-head"><span>100 imaginary days</span><em id="dots-caption"></em></div>
+    <div class="bayes-split">
+      <div class="dots" id="dots"></div>
+      <div>
+        <div class="bars" id="bayes-bars"></div>
+      </div>
+    </div>
+    <div class="legend-mini">
+      <span><i class="k-filled"></i>strong-wind day</span><span><i class="k-empty"></i>calm day</span><span><i class="k-ring"></i>matches today's reading</span>
+    </div>
+    <p class="vnote">Count only the ringed days: the share of them that are filled is the posterior. That is all Bayes' rule does.</p>
+  </div>
+
+  <div class="calc">
+    <div class="calc-head"><span>Step by step</span><button type="button" data-reset>reset</button></div>
+    <div class="fields">
+      <div class="field"><label for="b-prior">P(strong)</label><input id="b-prior" data-p="prior" type="number" min="0" max="1" step="0.05"></div>
+      <div class="field"><label for="b-hit">P(alert|strong)</label><input id="b-hit" data-p="hit" type="number" min="0" max="1" step="0.05"></div>
+      <div class="field"><label for="b-fa">P(alert|calm)</label><input id="b-fa" data-p="fa" type="number" min="0" max="1" step="0.05"></div>
+      <div class="field"><label>reading</label>
+        <div class="seg" data-seg="alert"><button data-v="1">alert</button><button data-v="0">quiet</button></div>
+      </div>
+    </div>
+    <div class="outs">
+      <div class="out"><small>P(e | strong)·P(strong)</small><b data-out="joint_s">–</b></div>
+      <div class="out"><small>P(e)</small><b data-out="evidence">–</b></div>
+      <div class="out"><small>P(strong | e)</small><b data-out="posterior">–</b></div>
+    </div>
+    <pre class="log" id="bayes-steps"></pre>
+  </div>
+</section>
+
+<!-- 04 MDP -->
+<section id="mdp">
+  <div class="tag">04 · Sequential decisions</div>
+  <h2>Markov decision process</h2>
+  <p class="gist">waiting costs a little now, flying into a storm costs a lot</p>
+  <div class="rows">
+    <div class="row"><b>states</b><span>calm, windy</span></div>
+    <div class="row"><b>actions</b><span>fly (mission ends), wait (weather may change)</span></div>
+    <div class="row"><b>rewards</b><span>R(s, a) · delivery +10, crash risk −20, delay −2 / −1</span></div>
+    <div class="row"><b>transitions</b><span>P(s′ | s) while waiting · calm stays calm 80%, windy stays windy 60%</span></div>
+    <div class="row"><b>Bellman</b><span>Q(s,a) = R(s,a) + γ Σ P(s′|s) V(s′) · V(s) = max Q(s,a)</span></div>
+    <div class="row"><b>belief</b><span>we do not know the state · weight by b = P(windy) from Bayes (QMDP)</span></div>
+  </div>
+  <pre>Q_b(a) = b·Q(windy,a) + (1−b)·Q(calm,a)  → max</pre>
+
+  <div class="viz">
+    <div class="vz-head"><span>Q-table</span><em id="mdp-caption"></em></div>
+    <div class="seg" data-seg="mode">
+      <button data-v="value_iteration">value iteration</button><button data-v="one_step">one Bellman update</button>
+    </div>
+    <div class="qtable" id="qtable"></div>
+    <div class="mdp-split">
+      <div>
+        <div class="vz-sub">expected value under today's belief</div>
+        <div class="bars two" id="qb-bars"></div>
+      </div>
+      <div>
+        <div class="vz-sub">value iteration: V(s) after each Bellman update</div>
+        <svg class="vsvg" id="vi-chart" viewBox="0 0 320 180"></svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="calc">
+    <div class="calc-head"><span>Model</span><button type="button" data-reset>reset</button></div>
+    <div class="fields">
+      <div class="field"><label for="r_cf">R(calm,fly)</label><input id="r_cf" data-p="r_cf" type="number" step="1"></div>
+      <div class="field"><label for="r_wf">R(windy,fly)</label><input id="r_wf" data-p="r_wf" type="number" step="1"></div>
+      <div class="field"><label for="r_cw">R(calm,wait)</label><input id="r_cw" data-p="r_cw" type="number" step="0.5"></div>
+      <div class="field"><label for="r_ww">R(windy,wait)</label><input id="r_ww" data-p="r_ww" type="number" step="0.5"></div>
+      <div class="field"><label for="p_cc">P(calm→calm)</label><input id="p_cc" data-p="p_cc" type="number" min="0" max="1" step="0.05"></div>
+      <div class="field"><label for="p_ww">P(windy→windy)</label><input id="p_ww" data-p="p_ww" type="number" min="0" max="1" step="0.05"></div>
+      <div class="field"><label for="gamma">γ</label><input id="gamma" data-p="gamma" type="number" min="0" max="0.99" step="0.05"></div>
+    </div>
+    <div class="outs">
+      <div class="out"><small>Q_b(fly)</small><b data-out="qfly">–</b></div>
+      <div class="out"><small>Q_b(wait)</small><b data-out="qwait">–</b></div>
+      <div class="out"><small>fly only if b &lt;</small><b data-out="threshold">–</b></div>
+    </div>
+    <pre class="log" id="mdp-steps"></pre>
+  </div>
+</section>
+
+<!-- 05 A* -->
+<section id="astar">
+  <div class="tag">05 · Search</div>
+  <h2>A* search</h2>
+  <p class="gist">cheapest route, explore as little as possible</p>
+  <div class="rows">
+    <div class="row"><b>g(n)</b><span>cost paid from the depot to n</span></div>
+    <div class="row"><b>h(n)</b><span>Manhattan distance to the customer · |Δrow| + |Δcol|</span></div>
+    <div class="row"><b>f(n)</b><span>g + h · A* always expands the smallest f</span></div>
+    <div class="row"><b>step cost</b><span>1 per cell · 1 + λ·P(wind) for an open-field cell</span></div>
+    <div class="row"><b>admissible</b><span>every step costs ≥ 1, so h never overestimates → the route is optimal</span></div>
+  </div>
+  <pre>f(n) = g(n) + h(n)     field cost = 1 + λ·P(wind)</pre>
+
+  <div class="viz">
+    <div class="vz-head"><span>Step through A*</span><em id="astar-caption"></em></div>
+    <div class="astar-split">
+      <div class="grid" id="astar-grid"></div>
+      <div class="astar-info">
+        <div class="stats" id="astar-stats"></div>
+        <div class="frontier" id="astar-frontier"></div>
+      </div>
+    </div>
+    <div class="vz-bar">
+      <button class="vbtn" id="as-reset" type="button">⟲ reset</button>
+      <button class="vbtn" id="as-step" type="button">step →</button>
+      <button class="vbtn solid" id="as-play" type="button">▶ play</button>
+      <label class="range">speed <input type="range" id="as-speed" min="40" max="600" value="260"></label>
+    </div>
+    <div class="legend-mini">
+      <span><i class="k-current"></i>expanding now</span><span><i class="k-frontier"></i>frontier</span>
+      <span><i class="k-visited"></i>expanded</span><span><i class="k-path"></i>final route</span><span><i class="k-field"></i>open field</span>
+    </div>
+  </div>
+
+  <div class="calc">
+    <div class="calc-head"><span>Route planner</span><button type="button" data-reset>reset</button></div>
+    <div class="fields">
+      <div class="field"><label for="a-pen">wind penalty λ</label><input id="a-pen" data-p="penalty" type="number" min="0" max="100" step="1"></div>
+      <div class="field"><label for="a-prior">prior P(strong)</label><input id="a-prior" data-p="prior" type="number" min="0" max="1" step="0.05"></div>
+    </div>
+    <div class="outs">
+      <div class="out"><small>field cell cost</small><b data-out="fieldcost">–</b></div>
+      <div class="out"><small>nodes expanded</small><b data-out="expanded">–</b></div>
+      <div class="out"><small>moves · cost</small><b data-out="movescost">–</b></div>
+    </div>
+    <pre class="log" id="astar-steps"></pre>
+  </div>
+</section>
+
+<!-- 06 PIPELINE -->
+<section id="pipeline">
+  <div class="tag">06 · Integration</div>
+  <h2>How it connects</h2>
+  <p class="gist">one belief, two consumers</p>
+  <div class="viz">
+    <div class="vz-head"><span>Data flow</span><em>live values</em></div>
+    <svg class="vsvg" id="flow" viewBox="0 0 640 230"></svg>
+  </div>
+  <div class="rows">
+    <div class="row"><b>Bayes → MDP</b><span>the posterior is the belief b over the hidden weather state</span></div>
+    <div class="row"><b>Bayes → A*</b><span>the posterior scales the cost of open-field cells</span></div>
+    <div class="row"><b>MDP → A*</b><span>the route is flown only if the MDP says fly · otherwise it is a preview</span></div>
+    <div class="row"><b>scenario B</b><span>safe enough to fly, not safe enough for the shortcut · both decisions differ</span></div>
+  </div>
+</section>
+
+<!-- 07 SENSITIVITY -->
+<section id="sensitivity">
+  <div class="tag">07 · Results</div>
+  <h2>Sensitivity</h2>
+  <p class="gist">how the prior changes every answer</p>
+  <div class="viz">
+    <div class="vz-head"><span>posterior vs prior</span><em>shaded = drone flies · dot = now</em></div>
+    <svg class="vsvg" id="sens" viewBox="0 0 640 300"></svg>
+    <div class="legend-mini">
+      <span><i class="k-line"></i>after an alert</span><span><i class="k-dash"></i>after a quiet reading</span><span><i class="k-thr"></i>fly threshold</span>
+    </div>
+  </div>
+  <div class="tablewrap"><table class="res" id="scenarios"></table></div>
+</section>
+
+<!-- 08 TESTS -->
+<section id="tests">
+  <div class="tag">08 · Testing</div>
+  <h2>Testing</h2>
+  <p class="gist">27 automated checks, run them right here</p>
+  <div class="rows">
+    <div class="row"><b>Bayes</b><span>hand-calculated posteriors · alert raises, quiet lowers · 50/50 sensor changes nothing · bad input rejected</span></div>
+    <div class="row"><b>MDP</b><span>one step = immediate reward · value iteration = closed form 2.6/0.46 · threshold separates actions</span></div>
+    <div class="row"><b>A*</b><span>optimal 11 moves when calm · same length as BFS · never enters walls · detours when windy · no-route case</span></div>
+    <div class="row"><b>integration</b><span>scenarios A, B, C give the expected belief, action and route</span></div>
+    <div class="row"><b>web server</b><span>the API returns exactly what drone/ computes · bad input → 400 · files outside web/ → 404</span></div>
+  </div>
+  <div class="calc">
+    <div class="calc-head"><span>pytest</span><button type="button" id="run-tests">run tests</button></div>
+    <div class="outs">
+      <div class="out"><small>passed</small><b data-out="t_pass">–</b></div>
+      <div class="out"><small>failed</small><b data-out="t_fail">–</b></div>
+      <div class="out"><small>time</small><b data-out="t_time">–</b></div>
+    </div>
+    <pre class="log" id="test-log">press “run tests”</pre>
+  </div>
+</section>
+
+<!-- 09 LIMITS -->
+<section id="limits">
+  <div class="tag">09 · Honest limits</div>
+  <h2>Limits and next steps</h2>
+  <p class="gist">what the model does, and what it does not</p>
+  <div class="rows">
+    <div class="row"><b>toy numbers</b><span>probabilities and rewards are invented · real ones come from weather data and flight logs</span></div>
+    <div class="row"><b>QMDP</b><span>assumes the weather is known after one step · never waits just to take another reading</span></div>
+    <div class="row"><b>one reading</b><span>several readings over time → HMM filtering of the wind</span></div>
+    <div class="row"><b>flat wind</b><span>no direction, no battery · next: anisotropic costs, 8 moves, energy budget</span></div>
+    <div class="row"><b>is it intelligent?</b><span>a belief moves from 0.30 to 0.63 · no idea what wind is · responsibility stays with people</span></div>
+  </div>
+</section>
+
+<footer>AI Fundamentals · Final Project · Topic 13 · Bogdan Murygin · QAIRU 2026 · <a href="https://github.com/bogdan-000/ai-fundamentals-final">GitHub</a></footer>
+</main>
+</div>
+</div>
+
+<button class="top" id="topBtn" type="button" aria-label="Back to top">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
+</button>
+
+<button class="nightbtn" id="nightBtn" type="button" aria-pressed="false" aria-label="Night mode">
+  <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+    <defs><mask id="moonMask"><rect width="24" height="24" fill="#fff"/><circle class="cut" cx="30" cy="-6" r="7" fill="#000"/></mask></defs>
+    <circle class="orb" cx="12" cy="12" r="5" fill="currentColor" mask="url(#moonMask)"/>
+    <g class="rays" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <path d="M12 1.5v2.2M12 20.3v2.2M1.5 12h2.2M20.3 12h2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/>
+    </g>
+  </svg>
+  <span class="tip">night mode</span>
+</button>
+
+<script src="book.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

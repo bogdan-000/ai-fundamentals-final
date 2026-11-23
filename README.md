@@ -30,14 +30,27 @@ both the MDP (as the belief over weather states) and A\* (as the risk weight on 
 git clone https://github.com/bogdan-000/ai-fundamentals-final.git
 cd ai-fundamentals-final
 python -m venv .venv && source .venv/bin/activate     # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-
-streamlit run app.py      # web UI  → http://localhost:8501
+python server.py          # web UI → opens http://localhost:8000
 python main.py            # console demo, 3 preset scenarios
-pytest -v                 # 21 tests
+
+pip install -r requirements.txt   # only needed for the tests
+pytest -v                         # 27 tests
 ```
 
-Requires Python 3.10+.
+Requires Python 3.10+. The web UI and the console demo use **only the standard library** — nothing to install.
+
+### Web UI
+`server.py` serves a single-page site (`web/`) and one JSON endpoint, `GET /api/mission`.
+The page never re-implements the algorithms: every number on it is computed by the `drone/` package.
+
+- **Mission control** — presets A/B/C or custom inputs; animated map: A* exploring, then the route (dashed = drone waits).
+- **Bayes** — 100-day dot picture of Bayes' rule, prior vs posterior bars, step-by-step calculation.
+- **MDP** — live Q-table, expected value under the belief, value-iteration convergence chart, editable rewards/transitions/γ.
+- **A\*** — step / play through the search, frontier and g, h, f of every expanded node.
+- **Sensitivity** — posterior vs prior for both readings with the fly threshold.
+- **Testing** — a button that runs the pytest suite from the browser.
+
+Visual design adapted from the course book *AI in Short* (monochrome, particle field, night mode).
 
 Console options:
 ```bash
@@ -123,20 +136,22 @@ Full output: [`docs/sample_output.txt`](docs/sample_output.txt) · test log: [`d
 drone/
   bayes.py      Bayesian update of P(strong wind)
   mdp.py        MDP, Bellman update, value iteration, belief-based decision
-  astar.py      grid map, A* with wind-weighted costs, ASCII renderer
+  astar.py      grid map, A* with wind-weighted costs and step trace, ASCII renderer
   pipeline.py   run_mission(): Bayes → MDP → A*
-app.py          Streamlit UI
+server.py       web server (standard library) + JSON API
+web/            the site: index.html, style.css, app.js, book.css/book.js (design)
 main.py         console demo
-tests/          pytest suite (unit + integration)
+tests/          pytest suite (unit, integration, web API)
 docs/           report, AI usage declaration, contribution statement, demo script
 ```
 
 ## Testing
-21 tests in `tests/test_drone.py`:
+27 tests in `tests/` (also runnable from the **Testing** section of the site):
 - **Bayes** — hand-calculated posteriors, alert raises / silence lowers belief, useless sensor leaves belief unchanged, invalid input rejected.
 - **MDP** — one-step Q = immediate reward, value iteration matches the closed-form V(windy)=2.6/0.46, policy at belief 0 and 1, threshold separates decisions, bad transition table rejected.
 - **A\*** — optimal 11-move route when calm, matches BFS length (optimality check), never enters obstacles, detours when windy, reports “no route”, rejects invalid start.
 - **Integration** — the three scenarios above.
+- **Web server** — API output equals the engine output, bad input → HTTP 400, no access outside `web/` (404).
 
 ## Documents
 - [Technical report](docs/REPORT.md)

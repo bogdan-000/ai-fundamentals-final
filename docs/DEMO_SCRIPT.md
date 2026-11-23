@@ -4,26 +4,28 @@
 "A delivery drone gets one noisy wind reading before take-off. It must decide: is it windy,
 should it fly or wait, and which route. I solve each question with a different AI algorithm."
 
+**Before recording:** `python server.py` → the site opens at http://localhost:8000 → click **Launch mission**.
+
 **0:20 — Scenario A, Calm morning (30 s)**
-Select preset A. Point at: P(strong wind) 2.7 % → FLY → 11-move shortcut across the open field.
+In *Mission control* select preset A. Point at: P(strong wind) 2.7 % → FLY → 11-move shortcut across the open field.
 "Low risk, so A* happily crosses the open field."
 
 **0:50 — Scenario B, Uncertain day (40 s)**
 Select preset B. P = 9.7 % → still FLY (below the 12.9 % threshold), but the route jumps to 15 moves.
 "Same algorithms, but the wind belief made the open-field cells expensive, so A* detours."
-Open tab ③ A* to show expanded nodes.
+Scroll to *A\* search*, press **play** to show the frontier and f = g + h.
 
 **1:30 — Scenario C, Storm warning (40 s)**
-Select preset C. P = 63 % → WAIT. Open tab ① Bayes: 0.24 / 0.38 = 0.632.
-Open tab ② MDP: Q_b(fly) = −8.9 vs Q_b(wait) = 5.9.
+Select preset C. P = 63 % → WAIT, the route turns dashed (preview).
+*Bayes* section: ringed dots, 0.24 / 0.38 = 0.632. *MDP* section: Q_b(fly) = −8.95 vs Q_b(wait) = 5.86.
 "The sensor alert flipped the decision — the drone holds at the depot."
 
 **2:10 — Interactivity (30 s)**
-Switch to Custom, raise the false-alarm rate to 0.45 → posterior drops, decision may flip to FLY.
-Open the sensitivity table.
+Raise the false-alarm rate to 0.45 → posterior drops to 13.5 %, right at the threshold.
+Show the *Sensitivity* chart: the dot moves with the inputs.
 
 **2:40 — Tests (15 s)**
-Terminal: `pytest -v` → 21 passed.
+*Testing* section → **run tests** → 27 passed.
 
 ---
 

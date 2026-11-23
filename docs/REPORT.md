@@ -101,7 +101,7 @@ in a meaningful way: scenario B is "safe enough to fly, not safe enough for the 
 
 ## 8. Testing
 
-21 automated tests with pytest, all passing (`docs/test_results.txt`):
+27 automated tests with pytest, all passing (`docs/test_results.txt`):
 
 | Area | What is checked |
 |---|---|
@@ -109,17 +109,27 @@ in a meaningful way: scenario B is "safe enough to fly, not safe enough for the 
 | MDP | one-step Q equals R; value iteration equals the closed-form solution; fly at b=0, wait at b=1; threshold separates the two actions; transition rows must sum to 1 |
 | A\* | optimal 11-move route with no wind; same length as BFS; no obstacle cells; each move is one step; detour at high wind; "no route" case; invalid start rejected |
 | Integration | scenarios A, B, C give the expected posterior, action and route |
+| Web server | API returns exactly the engine's numbers; invalid input → HTTP 400; paths outside `web/` → 404 |
 
-The UI was also tested headlessly with `streamlit.testing` (all presets render without exceptions).
+The site was also tested end-to-end in Chrome (Playwright): presets A/B/C show the same numbers as
+the engine, inputs stay in sync across sections, the A* stepper works, the test button reports all passed,
+no JavaScript errors, and the layout works on a 390 px phone screen.
 
 ## 9. User interface
 
-A Streamlit web app (`streamlit run app.py`):
-- sidebar: presets, prior, sensor alert, sensor accuracy, MDP rewards/transitions/γ, solver choice, wind penalty;
-- headline metrics: P(strong wind), decision with fly threshold, route length;
-- colour-coded map showing the route, the cells A\* expanded, the building and the open field;
-- tabs with the step-by-step calculation of each algorithm;
-- sensitivity table: decision and route for every prior from 0 to 1.
+A single-page website served by `python server.py` (Python standard library only, no frameworks).
+The page sends the inputs to `GET /api/mission`; the server runs the `drone/` package and returns every
+intermediate value as JSON, so the browser never re-implements an algorithm.
+
+- **Mission control:** presets and custom inputs, four live outputs, a verdict sentence, and an animated map
+  (A\* exploring, then the route; a dashed route means the drone is waiting).
+- **Bayes:** 100 imaginary days as dots (the ringed days that are filled = the posterior), prior/posterior bars, step log.
+- **MDP:** Q-table with the best action per state, expected values under the belief, value-iteration convergence chart.
+- **A\*:** step/play through the search showing the current node, its g, h, f and the frontier.
+- **How it connects:** live data-flow diagram; **Sensitivity:** posterior vs prior with the fly threshold.
+- **Testing:** runs the pytest suite from the browser.
+
+The visual design (monochrome, particle background, night mode) is adapted from the course book *AI in Short*.
 
 A console version (`python main.py`) prints the same input → steps → output.
 
