@@ -1,0 +1,153 @@
+========================================================================
+A. Calm morning (prior 0.10, no alert)
+========================================================================
+
+[1] BAYESIAN INFERENCE — how likely is strong wind?
+    Prior:       P(strong) = 0.100,  P(calm) = 0.900
+    Observation: no_alert
+    Likelihood:  P(no_alert|strong) = 0.200,  P(no_alert|calm) = 0.800
+    Joint:       P(no_alert,strong) = 0.200*0.100 = 0.0200
+                 P(no_alert,calm)   = 0.800*0.900 = 0.7200
+    Evidence:    P(no_alert) = 0.0200 + 0.7200 = 0.7400
+    Posterior:   P(strong|no_alert) = 0.0200 / 0.7400 = 0.0270
+    => One sensor reading moved P(strong) from 0.10 to 0.027.
+
+[2] MDP — fly now or wait?
+    Value iteration converged after 27 Bellman updates (gamma=0.9)
+      V(calm) = 10.000   Q(calm,fly) = 10.000   Q(calm,wait) = 6.217
+      V(windy) = 5.652   Q(windy,fly) = -20.000   Q(windy,wait) = 5.652
+      Q_b(fly) = 0.027*-20.000 + 0.973*10.000 = 9.189
+      Q_b(wait) = 0.027*5.652 + 0.973*6.217 = 6.202
+      Decision: FLY (larger expected value)
+    => Under the current belief, FLY has the higher expected value.
+
+[3] A* SEARCH — which route?
+    Start (0, 0), goal (0, 5), h = Manhattan, exposed-cell cost = 1 + 25.0*0.027 = 1.676
+      expand (0, 0): g=0.00 h=5 f=5.00
+      expand (0, 1): g=1.00 h=4 f=5.00
+      expand (0, 2): g=2.00 h=3 f=5.00
+      expand (1, 0): g=1.00 h=6 f=7.00
+      expand (1, 1): g=2.00 h=5 f=7.00
+      expand (1, 2): g=3.00 h=4 f=7.00
+      expand (2, 0): g=2.00 h=7 f=9.00
+      expand (2, 1): g=3.00 h=6 f=9.00
+      expand (2, 2): g=4.00 h=5 f=9.00
+      expand (3, 0): g=3.00 h=8 f=11.00
+      expand (3, 1): g=4.00 h=7 f=11.00
+      expand (3, 2): g=5.00 h=6 f=11.00
+      ... goal reached after expanding 21 nodes
+    Route (11 moves, cost 12.35, 2 exposed cells): (0, 0) -> (0, 1) -> (0, 2) -> (1, 2) -> (2, 2) -> (3, 2) -> (3, 3) -> (3, 4) -> (2, 4) -> (1, 4) -> (0, 4) -> (0, 5)
+
+    S * * # * G
+    . . * # * .
+    . . * # * .
+    . . * * * .
+    . . . ~ ~ .
+    . . . . . .
+    (S depot, G customer, # building, ~ open field, * route)
+    => A* found the lowest-cost route given the wind risk on open-field cells.
+
+RESULT: P(strong wind) = 0.027 | action = FLY | route: 11 moves, 2 exposed cells | EXECUTE route 
+
+========================================================================
+B. Uncertain day (prior 0.30, no alert)
+========================================================================
+
+[1] BAYESIAN INFERENCE — how likely is strong wind?
+    Prior:       P(strong) = 0.300,  P(calm) = 0.700
+    Observation: no_alert
+    Likelihood:  P(no_alert|strong) = 0.200,  P(no_alert|calm) = 0.800
+    Joint:       P(no_alert,strong) = 0.200*0.300 = 0.0600
+                 P(no_alert,calm)   = 0.800*0.700 = 0.5600
+    Evidence:    P(no_alert) = 0.0600 + 0.5600 = 0.6200
+    Posterior:   P(strong|no_alert) = 0.0600 / 0.6200 = 0.0968
+    => One sensor reading moved P(strong) from 0.30 to 0.097.
+
+[2] MDP — fly now or wait?
+    Value iteration converged after 27 Bellman updates (gamma=0.9)
+      V(calm) = 10.000   Q(calm,fly) = 10.000   Q(calm,wait) = 6.217
+      V(windy) = 5.652   Q(windy,fly) = -20.000   Q(windy,wait) = 5.652
+      Q_b(fly) = 0.097*-20.000 + 0.903*10.000 = 7.097
+      Q_b(wait) = 0.097*5.652 + 0.903*6.217 = 6.163
+      Decision: FLY (larger expected value)
+    => Under the current belief, FLY has the higher expected value.
+
+[3] A* SEARCH — which route?
+    Start (0, 0), goal (0, 5), h = Manhattan, exposed-cell cost = 1 + 25.0*0.097 = 3.419
+      expand (0, 0): g=0.00 h=5 f=5.00
+      expand (0, 1): g=1.00 h=4 f=5.00
+      expand (0, 2): g=2.00 h=3 f=5.00
+      expand (1, 0): g=1.00 h=6 f=7.00
+      expand (1, 1): g=2.00 h=5 f=7.00
+      expand (1, 2): g=3.00 h=4 f=7.00
+      expand (2, 0): g=2.00 h=7 f=9.00
+      expand (2, 1): g=3.00 h=6 f=9.00
+      expand (2, 2): g=4.00 h=5 f=9.00
+      expand (3, 0): g=3.00 h=8 f=11.00
+      expand (3, 1): g=4.00 h=7 f=11.00
+      expand (3, 2): g=5.00 h=6 f=11.00
+      ... goal reached after expanding 27 nodes
+    Route (15 moves, cost 15.00, 0 exposed cells): (0, 0) -> (0, 1) -> (0, 2) -> (1, 2) -> (2, 2) -> (3, 2) -> (4, 2) -> (5, 2) -> (5, 3) -> (5, 4) -> (5, 5) -> (4, 5) -> (3, 5) -> (2, 5) -> (1, 5) -> (0, 5)
+
+    S * * # . G
+    . . * # . *
+    . . * # . *
+    . . * ~ ~ *
+    . . * ~ ~ *
+    . . * * * *
+    (S depot, G customer, # building, ~ open field, * route)
+    => A* found the lowest-cost route given the wind risk on open-field cells.
+
+RESULT: P(strong wind) = 0.097 | action = FLY | route: 15 moves, 0 exposed cells | EXECUTE route 
+
+========================================================================
+C. Storm warning (prior 0.30, ALERT)
+========================================================================
+
+[1] BAYESIAN INFERENCE — how likely is strong wind?
+    Prior:       P(strong) = 0.300,  P(calm) = 0.700
+    Observation: alert
+    Likelihood:  P(alert|strong) = 0.800,  P(alert|calm) = 0.200
+    Joint:       P(alert,strong) = 0.800*0.300 = 0.2400
+                 P(alert,calm)   = 0.200*0.700 = 0.1400
+    Evidence:    P(alert) = 0.2400 + 0.1400 = 0.3800
+    Posterior:   P(strong|alert) = 0.2400 / 0.3800 = 0.6316
+    => One sensor reading moved P(strong) from 0.30 to 0.632.
+
+[2] MDP — fly now or wait?
+    Value iteration converged after 27 Bellman updates (gamma=0.9)
+      V(calm) = 10.000   Q(calm,fly) = 10.000   Q(calm,wait) = 6.217
+      V(windy) = 5.652   Q(windy,fly) = -20.000   Q(windy,wait) = 5.652
+      Q_b(fly) = 0.632*-20.000 + 0.368*10.000 = -8.947
+      Q_b(wait) = 0.632*5.652 + 0.368*6.217 = 5.860
+      Decision: WAIT (larger expected value)
+    => Under the current belief, WAIT has the higher expected value.
+
+[3] A* SEARCH — which route?
+    Start (0, 0), goal (0, 5), h = Manhattan, exposed-cell cost = 1 + 25.0*0.632 = 16.789
+      expand (0, 0): g=0.00 h=5 f=5.00
+      expand (0, 1): g=1.00 h=4 f=5.00
+      expand (0, 2): g=2.00 h=3 f=5.00
+      expand (1, 0): g=1.00 h=6 f=7.00
+      expand (1, 1): g=2.00 h=5 f=7.00
+      expand (1, 2): g=3.00 h=4 f=7.00
+      expand (2, 0): g=2.00 h=7 f=9.00
+      expand (2, 1): g=3.00 h=6 f=9.00
+      expand (2, 2): g=4.00 h=5 f=9.00
+      expand (3, 0): g=3.00 h=8 f=11.00
+      expand (3, 1): g=4.00 h=7 f=11.00
+      expand (3, 2): g=5.00 h=6 f=11.00
+      ... goal reached after expanding 26 nodes
+    Route (15 moves, cost 15.00, 0 exposed cells): (0, 0) -> (0, 1) -> (0, 2) -> (1, 2) -> (2, 2) -> (3, 2) -> (4, 2) -> (5, 2) -> (5, 3) -> (5, 4) -> (5, 5) -> (4, 5) -> (3, 5) -> (2, 5) -> (1, 5) -> (0, 5)
+
+    S * * # . G
+    . . * # . *
+    . . * # . *
+    . . * ~ ~ *
+    . . * ~ ~ *
+    . . * * * *
+    (S depot, G customer, # building, ~ open field, * route)
+    => A* found the lowest-cost route given the wind risk on open-field cells.
+
+RESULT: P(strong wind) = 0.632 | action = WAIT | route: 15 moves, 0 exposed cells | HOLD at depot (route is a preview) 
+

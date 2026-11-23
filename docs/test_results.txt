@@ -1,0 +1,30 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.18, pytest-9.1.1, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/claude/drone-parcel-route
+plugins: platformdirs-4.13.5, anyio-4.15.1
+collecting ... collected 21 items
+
+tests/test_drone.py::test_bayes_alert_hand_calculation PASSED            [  4%]
+tests/test_drone.py::test_bayes_no_alert_hand_calculation PASSED         [  9%]
+tests/test_drone.py::test_alert_raises_and_silence_lowers_belief PASSED  [ 14%]
+tests/test_drone.py::test_useless_sensor_does_not_change_belief PASSED   [ 19%]
+tests/test_drone.py::test_certain_prior_stays_certain PASSED             [ 23%]
+tests/test_drone.py::test_bayes_rejects_invalid_probability[-0.1] PASSED [ 28%]
+tests/test_drone.py::test_bayes_rejects_invalid_probability[1.5] PASSED  [ 33%]
+tests/test_drone.py::test_one_step_equals_immediate_reward PASSED        [ 38%]
+tests/test_drone.py::test_value_iteration_matches_closed_form PASSED     [ 42%]
+tests/test_drone.py::test_mdp_policy_extremes PASSED                     [ 47%]
+tests/test_drone.py::test_threshold_separates_decisions PASSED           [ 52%]
+tests/test_drone.py::test_invalid_transition_table_rejected PASSED       [ 57%]
+tests/test_drone.py::test_astar_shortest_path_when_calm PASSED           [ 61%]
+tests/test_drone.py::test_astar_avoids_obstacles_and_moves_one_step PASSED [ 66%]
+tests/test_drone.py::test_astar_detours_when_windy PASSED                [ 71%]
+tests/test_drone.py::test_astar_no_route PASSED                          [ 76%]
+tests/test_drone.py::test_astar_matches_bfs_on_uniform_costs PASSED      [ 80%]
+tests/test_drone.py::test_astar_rejects_start_in_obstacle PASSED         [ 85%]
+tests/test_drone.py::test_scenario_calm_flies_short_route PASSED         [ 90%]
+tests/test_drone.py::test_scenario_uncertain_flies_safe_route PASSED     [ 95%]
+tests/test_drone.py::test_scenario_storm_waits PASSED                    [100%]
+
+============================== 21 passed in 0.05s ==============================
