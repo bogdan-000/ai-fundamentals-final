@@ -95,8 +95,11 @@ def run_tests() -> dict:
         return {"ok": False, "summary": "timed out", "output": "", "seconds": 120}
     out = proc.stdout + proc.stderr
     if "No module named pytest" in out:
-        return {"ok": False, "summary": "pytest is not installed — run: pip install pytest",
-                "output": out, "seconds": time.time() - t0}
+        hint = (f"pytest is not installed for this Python ({sys.executable}).\n"
+                "Install it, then press the button again:\n\n"
+                "    python -m pip install pytest\n")
+        return {"ok": False, "passed": 0, "failed": 0, "summary": "pytest is not installed",
+                "output": hint, "seconds": round(time.time() - t0, 2)}
     passed = out.count(" PASSED")
     failed = out.count(" FAILED") + out.count(" ERROR")
     lines = [ln for ln in out.strip().splitlines() if ln.strip()]
