@@ -279,3 +279,9 @@ table.mtab td.on{background:var(--ink);color:#fff}
 .grid .cell{min-width:0;min-height:0;overflow:hidden}
 .astar-split > .grid,.mission-map > .grid{align-self:start}
 .astar-split{grid-template-columns:minmax(0,380px) minmax(0,1fr)}
+
+/* a field cell that becomes route / current / frontier must look like that state, not like the field */
+.cell.field.path{background:var(--ink);color:#fff;font-size:11px}
+.cell.field.preview{background:#fff;color:var(--ink);font-size:11px}
+.cell.field.current{background:var(--ink);color:#fff}
+.cell.field.frontier{background:#fff;color:var(--ink)}
