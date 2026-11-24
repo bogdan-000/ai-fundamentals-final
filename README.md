@@ -3,6 +3,8 @@
 **AI Fundamentals — Final Project (Topic 13)**
 Author: Bogdan Murygin · QAIRU · 2026
 
+Video Link: https://drive.google.com/file/d/1FZovMoDIGOSkycoewf8n-z2aIOdXUuIm/view?usp=sharing
+
 A simulated delivery drone has to bring one parcel from a depot to a customer.
 Before take-off it gets **one wind-sensor reading**. The project answers three questions,
 each with a different AI technique from the course, and chains them into one decision:
