@@ -19,6 +19,12 @@
 <canvas id="field" aria-hidden="true"></canvas>
 <div class="progress" id="progress" aria-hidden="true"></div>
 
+<div class="modebar" id="modebar" role="tablist" aria-label="Mode">
+  <div class="mb-pill" id="mbPill"></div>
+  <button type="button" role="tab" data-mode="demo" class="on" aria-selected="true">Demo</button>
+  <button type="button" role="tab" data-mode="slides" aria-selected="false">Presentation</button>
+</div>
+
 <!-- ================= COVER ================= -->
 <div class="cover" id="cover">
   <div class="cover-inner" id="coverInner">
@@ -365,7 +371,160 @@
   <span class="tip">night mode</span>
 </button>
 
+
+<!-- ================= PRESENTATION ================= -->
+<div class="deck" id="deck" hidden aria-label="Presentation">
+  <div class="stage" id="stage">
+
+    <section class="slide s-title" data-title="Title">
+      <div class="kick">AI Fundamentals · Final Project · Topic 13</div>
+      <h2 class="big">Drone<br>Parcel Route</h2>
+      <p class="lead">One noisy wind reading. Three AI algorithms. One delivery decision.</p>
+      <div class="algo3">
+        <div><span>01</span><b>Bayes</b><em>is it windy?</em></div>
+        <div><span>02</span><b>MDP</b><em>fly or wait?</em></div>
+        <div><span>03</span><b>A*</b><em>which route?</em></div>
+      </div>
+      <div class="by">Bogdan Murygin · QAIRU · 2026</div>
+      <aside class="notes">Hello. My project is a delivery drone that has to decide whether it is safe to fly, and how. It combines three algorithms from the course: Bayesian inference, a Markov decision process and A* search.</aside>
+    </section>
+
+    <section class="slide" data-title="Problem">
+      <div class="kick">01 · Problem &amp; objectives</div>
+      <h3>Wind breaks drones.<br>Sensors are noisy.</h3>
+      <div class="cols">
+        <div>
+          <div class="lbl">the situation</div>
+          <ul class="ticks">
+            <li>a drone carries one parcel across a 6×6 map</li>
+            <li>strong wind over the open field can crash it</li>
+            <li>one sensor reading before take-off · misses 20% of storms, false-alarms 20% of calm days</li>
+          </ul>
+        </div>
+        <div>
+          <div class="lbl">three questions → three algorithms</div>
+          <div class="qa"><b>How likely is strong wind?</b><span>Bayesian inference</span></div>
+          <div class="qa"><b>Fly now or wait?</b><span>Markov decision process</span></div>
+          <div class="qa"><b>Which route?</b><span>A* search</span></div>
+        </div>
+      </div>
+      <div class="obj"><span>objective</span>make all three decisions automatically from one reading, show every step, prove it with tests</div>
+      <aside class="notes">Operators of small drones must decide before every flight. The sensor is noisy, waiting costs time, and the shortest route crosses open terrain. I split this into three questions and solve each with a different course topic. All numbers are toy values, clearly labelled.</aside>
+    </section>
+
+    <section class="slide" data-title="Design">
+      <div class="kick">02 · System design</div>
+      <h3>One belief, two consumers</h3>
+      <svg class="vsvg flowbig" id="sl-flow" viewBox="0 0 640 230"></svg>
+      <div class="cols three">
+        <div class="mini"><b>Bayes → MDP</b><span>posterior = belief over the hidden weather</span></div>
+        <div class="mini"><b>Bayes → A*</b><span>posterior scales the cost of open-field cells</span></div>
+        <div class="mini"><b>MDP → A*</b><span>route is flown only if the MDP says fly</span></div>
+      </div>
+      <aside class="notes">This is the key point: the algorithms are connected, not three separate demos. Bayes produces one number, the probability of strong wind. The MDP uses it as its belief to choose fly or wait, and A* uses it to make open-field cells more expensive.</aside>
+    </section>
+
+    <section class="slide center" data-title="Bayes">
+      <div class="kick">03 · Topic 1 — Probabilistic reasoning</div>
+      <h3>Bayesian inference</h3>
+      <div class="eqbig">P(strong | e) = P(e | strong) · P(strong) / P(e)</div>
+      <div class="cols">
+        <div>
+          <div class="lbl">worked example · scenario C</div>
+          <div class="calcrows">
+            <div><span>prior P(strong)</span><b>0.30</b></div>
+            <div><span>reading</span><b>alert</b></div>
+            <div><span>P(alert,strong) = 0.8 × 0.3</span><b>0.24</b></div>
+            <div><span>P(alert,calm) = 0.2 × 0.7</span><b>0.14</b></div>
+            <div><span>P(alert) = 0.24 + 0.14</span><b>0.38</b></div>
+            <div class="hl"><span>P(strong | alert) = 0.24 / 0.38</span><b>0.632</b></div>
+          </div>
+        </div>
+        <div class="bigstat">
+          <div class="from">30%</div><div class="arrow">→</div><div class="to">63.2%</div>
+          <p>one alert more than doubles the belief · a quiet reading drops it to 9.7%</p>
+        </div>
+      </div>
+      <aside class="notes">The wind state is hidden; we only see the sensor. Prior 0.3. The alert has likelihood 0.8 if windy and 0.2 if calm. Multiply, add to get the evidence 0.38, divide: 0.632. If the sensor were 50/50, the posterior would equal the prior.</aside>
+    </section>
+
+    <section class="slide center" data-title="MDP">
+      <div class="kick">04 · Topic 2 — Sequential decisions</div>
+      <h3>Markov decision process</h3>
+      <div class="cols">
+        <div>
+          <table class="mtab">
+            <tr><th></th><th>fly</th><th>wait</th></tr>
+            <tr><th>calm</th><td class="on">+10</td><td>−2</td></tr>
+            <tr><th>windy</th><td>−20</td><td class="on">−1</td></tr>
+          </table>
+          <p class="small">rewards R(s,a) · fly ends the mission · waiting lets the weather change (calm stays 80%, windy stays 60%) · γ = 0.9</p>
+          <div class="eqbig sm">Q(s,a) = R(s,a) + γ Σ P(s′|s) V(s′)</div>
+        </div>
+        <div>
+          <div class="lbl">value iteration → decision under belief b</div>
+          <div class="calcrows">
+            <div><span>V(calm)</span><b>10.00</b></div>
+            <div><span>V(windy) = 2.6 / 0.46</span><b>5.65</b></div>
+            <div><span>Q_b(fly) = 10 − 30b</span><b>−8.95</b></div>
+            <div><span>Q_b(wait) ≈ 6.22 − 0.57b</span><b>5.86</b></div>
+            <div class="hl"><span>fly only if b &lt; 12.9% · b = 63.2%</span><b>WAIT</b></div>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">States calm and windy, actions fly and wait. Value iteration repeats the Bellman update until it converges, 27 updates. We do not know the state, so I weight the Q values by the Bayesian belief — the QMDP approximation. Setting the two lines equal gives the 12.9 percent threshold.</aside>
+    </section>
+
+    <section class="slide center" data-title="A*">
+      <div class="kick">05 · Topic 3 — Search</div>
+      <h3>A* search</h3>
+      <div class="cols">
+        <div>
+          <div class="eqbig sm">f(n) = g(n) + h(n)</div>
+          <ul class="ticks">
+            <li><b>h</b> = Manhattan distance · admissible, every step costs ≥ 1</li>
+            <li>normal cell costs 1 · open-field cell costs <b>1 + 25·P(wind)</b></li>
+            <li>shortcut: 11 moves through 2 field cells · detour: 15 moves</li>
+            <li>A* takes the shortcut only while <b>P(wind) &lt; 8%</b></li>
+          </ul>
+        </div>
+        <div class="routes">
+          <div><div class="grid sl-grid" id="sl-gridA"></div><small>A · P = 2.7% · shortcut</small></div>
+          <div><div class="grid sl-grid" id="sl-gridB"></div><small>B · P = 9.7% · detour</small></div>
+        </div>
+      </div>
+      <aside class="notes">A* expands the node with the smallest f = g + h. Manhattan never overestimates because each move costs at least one, so the route is optimal — it matches BFS when there is no wind. The wind belief changes the cost of the open field, so the same algorithm picks a different route.</aside>
+    </section>
+
+    <section class="slide" data-title="Results">
+      <div class="kick">06 · Results &amp; testing</div>
+      <h3>Three scenarios, three behaviours</h3>
+      <table class="res" id="sl-table"></table>
+      <div class="cols three">
+        <div class="mini dark"><b>27 / 27</b><span>pytest checks pass · hand-calculated values, edge cases, web API</span></div>
+        <div class="mini"><b>verified</b><span>A* = BFS length · value iteration = closed form · end-to-end browser test</span></div>
+        <div class="mini"><b>limits</b><span>toy numbers · QMDP ignores the value of another reading · next: HMM over time</span></div>
+      </div>
+      <button class="vbtn solid golive" type="button" data-mode="demo">Live demo →</button>
+      <aside class="notes">Scenario B is the interesting one: safe enough to fly, not safe enough for the shortcut. Everything is covered by 27 automated tests, which I can run live from the page. Now let me show the live demo.</aside>
+    </section>
+
+  </div>
+
+  <div class="deck-ui">
+    <button type="button" class="dbtn" id="dPrev" aria-label="Previous slide">←</button>
+    <div class="dots-nav" id="dDots"></div>
+    <span class="dcount" id="dCount">1 / 7</span>
+    <button type="button" class="dbtn" id="dNext" aria-label="Next slide">→</button>
+    <button type="button" class="dbtn txt" id="dNotes" title="Speaker notes (N)">notes</button>
+    <button type="button" class="dbtn txt" id="dFull" title="Fullscreen (F)">fullscreen</button>
+  </div>
+  <div class="notes-panel" id="notesPanel" hidden></div>
+  <div class="dprog" id="dProg"></div>
+</div>
+
 <script src="book.js"></script>
 <script src="app.js"></script>
+<script src="deck.js"></script>
 </body>
 </html>

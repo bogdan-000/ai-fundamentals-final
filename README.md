@@ -50,6 +50,11 @@ The page never re-implements the algorithms: every number on it is computed by t
 - **Sensitivity** — posterior vs prior for both readings with the fly threshold.
 - **Testing** — a button that runs the pytest suite from the browser.
 
+### Presentation
+The switch at the top of the page toggles **Demo | Presentation**. The presentation is a 7-slide deck
+built into the same page (title, problem, system design, Bayes, MDP, A*, results); live numbers on it come from the engine.
+Keys: `←` `→` to move, `F` fullscreen, `N` speaker notes, `Esc` back to the demo. Direct link: `http://localhost:8000/#present`.
+
 Visual design adapted from the course book *AI in Short* (monochrome, particle field, night mode).
 
 Console options:

@@ -4,6 +4,10 @@
 "A delivery drone gets one noisy wind reading before take-off. It must decide: is it windy,
 should it fly or wait, and which route. I solve each question with a different AI algorithm."
 
+**Defense order:** open `http://localhost:8000/#present` → slides 1–3 (problem, 2 min) → "Live demo →" on the last slide
+switches to the site for the demo (3–5 min) → back to **Presentation** for slides 4–6 (three AI topics, 2 min).
+Press `N` to see speaker notes, `F` for fullscreen.
+
 **Before recording:** `python server.py` → the site opens at http://localhost:8000 → click **Launch mission**.
 
 **0:20 — Scenario A, Calm morning (30 s)**
