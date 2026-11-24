@@ -97,7 +97,7 @@ def run_tests() -> dict:
     if "No module named pytest" in out:
         hint = (f"pytest is not installed for this Python ({sys.executable}).\n"
                 "Install it, then press the button again:\n\n"
-                "    python -m pip install pytest\n")
+                f'    "{sys.executable}" -m pip install pytest\n')
         return {"ok": False, "passed": 0, "failed": 0, "summary": "pytest is not installed",
                 "output": hint, "seconds": round(time.time() - t0, 2)}
     passed = out.count(" PASSED")
