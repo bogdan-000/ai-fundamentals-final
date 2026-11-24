@@ -283,6 +283,7 @@
   /* 3D tilt on formula blocks and calculators */
   if (fine && !reduce){
     document.querySelectorAll('.calc, pre, .eq').forEach(el => {
+      if (el.matches('pre') && el.closest('.calc')) return;   // nested tilt clashes with the parent's 3D plane
       el.addEventListener('pointermove', e => {
         const r = el.getBoundingClientRect();
         const x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;

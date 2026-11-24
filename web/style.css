@@ -130,3 +130,5 @@ main h2 .h-scr{white-space:nowrap;overflow:hidden}
   #presets{flex-wrap:wrap;border-radius:20px}
   #presets button{flex:1 1 40%}
 }
+/* a log inside a calculator moves with the calculator, not on its own */
+.calc pre,.calc pre:hover{transform:none;box-shadow:none}
