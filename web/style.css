@@ -72,9 +72,9 @@ footer a{color:inherit}
 /* ---------- A* ---------- */
 .astar-split{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:22px;align-items:start}
 .astar-info .stats{margin-top:0}
-.frontier{margin-top:14px;font-family:var(--mono);font-size:12.5px;color:var(--muted);line-height:1.9}
-.frontier b{font-weight:500;color:var(--ink)}
-.frontier .chip{display:inline-block;border:1.5px solid var(--ink);color:var(--ink);border-radius:999px;padding:0 8px;margin:0 4px 4px 0;font-size:11.5px}
+.as-frontier{margin-top:14px;font-family:var(--mono);font-size:12.5px;color:var(--muted);line-height:1.9}
+.as-frontier b{font-weight:500;color:var(--ink)}
+.as-frontier .chip{display:inline-block;border:1.5px solid var(--ink);color:var(--ink);border-radius:999px;padding:0 8px;margin:0 4px 4px 0;font-size:11.5px}
 
 /* ---------- svg charts ---------- */
 .vsvg .ax{stroke:#cfd2d6;stroke-width:1}
@@ -273,3 +273,9 @@ table.mtab td.on{background:var(--ink);color:#fff}
   .deck-ui .dbtn.txt,.dots-nav{display:none}
   .dbtn{min-width:44px;height:40px}
 }
+
+/* grids never grow wider than their column, whatever the font */
+.grid{grid-template-columns:repeat(6,minmax(0,1fr));width:100%}
+.grid .cell{min-width:0;min-height:0;overflow:hidden}
+.astar-split > .grid,.mission-map > .grid{align-self:start}
+.astar-split{grid-template-columns:minmax(0,380px) minmax(0,1fr)}

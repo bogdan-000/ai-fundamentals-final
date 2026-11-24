@@ -166,7 +166,7 @@
     const g = D.grid, key = (c) => c[0] + ',' + c[1];
     const walls = new Set(g.obstacles.map(key)), field = new Set(g.exposed.map(key));
     const path = new Map((D.route.path || []).map((c, i) => [key(c), i]));
-    el.style.gridTemplateColumns = `repeat(${g.cols},1fr)`;
+    el.style.gridTemplateColumns = `repeat(${g.cols},minmax(0,1fr))`;
     let h = '';
     for (let r = 0; r < g.rows; r++) for (let c = 0; c < g.cols; c++) {
       const k = r + ',' + c;

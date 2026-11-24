@@ -194,7 +194,7 @@
   function buildGrid(el) {
     const g = D.grid;
     if (el.children.length === g.rows * g.cols) return;
-    el.style.gridTemplateColumns = `repeat(${g.cols},1fr)`;
+    el.style.gridTemplateColumns = `repeat(${g.cols},minmax(0,1fr))`;
     el.innerHTML = '';
     for (let r = 0; r < g.rows; r++) for (let c = 0; c < g.cols; c++) {
       const d = document.createElement('div');
