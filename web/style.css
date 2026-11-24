@@ -132,3 +132,7 @@ main h2 .h-scr{white-space:nowrap;overflow:hidden}
 }
 /* a log inside a calculator moves with the calculator, not on its own */
 .calc pre,.calc pre:hover{transform:none;box-shadow:none}
+/* cover title: centred, always fits the window (JS shrinks it if the font is wider) */
+.cover-inner{max-width:min(1180px,94vw)}
+.cover .sub{max-width:560px}
+.cover .title{justify-self:center;max-width:94vw}

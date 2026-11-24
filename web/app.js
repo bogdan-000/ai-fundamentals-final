@@ -508,6 +508,20 @@
     btn.disabled = false; btn.textContent = 'run again';
   });
 
+  /* ================= cover title fit ================= */
+  function fitTitle() {
+    const t = $('.cover .title');
+    if (!t) return;
+    t.style.fontSize = '';
+    if (window.innerWidth <= 700) return;            // on phones the title wraps instead
+    const limit = Math.min(window.innerWidth * 0.92, 1180);
+    let fs = parseFloat(getComputedStyle(t).fontSize);
+    while (t.scrollWidth > limit && fs > 28) { fs -= 2; t.style.fontSize = fs + 'px'; }
+  }
+  fitTitle();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitTitle);
+  window.addEventListener('resize', fitTitle);
+
   /* ================= start ================= */
   syncInputs();
   load(false);
